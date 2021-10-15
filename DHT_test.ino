@@ -12,12 +12,12 @@
  ********************************************/
 
 /* Ids */
-const int number_of_sensors = 3;
+const int number_of_sensors = 2;
 uint16_t id_temp            = 556; // to change
 uint16_t id_humid           = 557; // to change
 uint16_t id_luminosity      = 558; // to change
 uint16_t id_node            = 236; // to change
-uint16_t id_sensor[number_of_sensors]={id_temp,id_humid,id_luminosity};
+uint16_t id_sensor [number_of_sensors]={id_temp,id_humid}; //id_luminosity
 float value_f[number_of_sensors];
 
 /*Senors*/
@@ -33,8 +33,8 @@ unsigned int freq = 865200000;//HZ
 
 /*network */ 
 #define WITH_APPKEY
-unsigned int idlePeriodInMin = 1; // in minute
-unsigned int nCycle = idlePeriodInMin*60;
+unsigned int idlePeriodInMin = 100; // in second
+unsigned int nCycle = idlePeriodInMin;
 unsigned short id_frame = 0;
 #ifdef WITH_APPKEY
 uint8_t my_appKey[4]={5, 6, 7, 8};
@@ -43,6 +43,10 @@ uint8_t my_appKey[4]={5, 6, 7, 8};
 unsigned int cpt=1;
 
 char message[100];
+
+
+
+
 
 void setup(){
 	Serial.begin(38400);
@@ -65,20 +69,22 @@ void setup(){
 
 
 
+
+
 void loop()
 {
   
 	/* Update sensor values*/
 	value_f[0]= Temperature(); // sensor's identifier id_sensor[0] --> Temp (°C)
 	value_f[1]= Humidity(); // sensor's identifier id_sensor[1] --> Humid (%)
-  value_f[2]= Luminosity(); // sensor's identifier id_sensor[2] --> Luminosity (Lumen)
+  // value_f[1]= Luminosity(); // sensor's identifier id_sensor[2] --> Luminosity (Lumen)
 
   Serial.print("\nTemp:");
   Serial.println(value_f[0]);
   Serial.print("Hum:");
   Serial.println(value_f[1]);
-  Serial.print("Lum:");
-  Serial.println(value_f[2]);
+  // Serial.print("Lum:");
+  // Serial.println(value_f[2]);
   
   Serial.print("Frame Number : ");
   Serial.println(cpt);
@@ -91,26 +97,12 @@ void loop()
      for(int j=0;j<nCycle;j++){delay(1000);}
 }
 
-float Temperature(){
-  DHT dht(DHTPIN, DHTTYPE);
-  dht.begin();
-  delay(2000);
-  return dht.readTemperature();
-}
-float Humidity(){
-  DHT dht(DHTPIN, DHTTYPE);
-  dht.begin();
-  delay(2000);
-  return dht.readHumidity();
-}
 
-float Luminosity(){
-  int sensorVal = analogRead(LUMPIN);
-   float Vout = float(sensorVal) * (VIN / float(1023));// Conversion analog to voltage
-  float RLDR = (R * (VIN - Vout))/Vout; // Conversion voltage to resistance
-  float phys=500/(RLDR/1000); // Conversion resitance to lumen
-  return phys;
-}
+
+
+
+
+
 
 void send_data(float * value){
    
@@ -132,8 +124,8 @@ void send_data(float * value){
 
       r_size=sprintf(message+app_key_offset,final_str);
     
-      Serial.println(message);
-      //Serial.println(r_size);
+      Serial.print(message);
+      Serial.println(r_size);
       
       LoRa.beginPacket();
       LoRa.print(message);
@@ -144,4 +136,35 @@ void send_data(float * value){
       for(uint8_t j=0;j<number_of_sensors;j++){
         value[j]=0.0;
       }
+}
+
+
+
+
+
+
+
+
+
+
+
+float Temperature(){
+  DHT dht(DHTPIN, DHTTYPE);
+  dht.begin();
+  delay(2000);
+  return dht.readTemperature();
+}
+float Humidity(){
+  DHT dht(DHTPIN, DHTTYPE);
+  dht.begin();
+  delay(2000);
+  return dht.readHumidity();
+}
+
+float Luminosity(){
+  int sensorVal = analogRead(LUMPIN);
+   float Vout = float(sensorVal) * (VIN / float(1023));// Conversion analog to voltage
+  float RLDR = (R * (VIN - Vout))/Vout; // Conversion voltage to resistance
+  float phys=500/(RLDR/1000); // Conversion resitance to lumen
+  return phys;
 }
