@@ -7,16 +7,16 @@
  *  This node is composed of : 
  *  --> MKRWAN 1300 board (SAMD21 Microcontroller & LoRa module).
  *  --> DHT11 sensor (temperature & humidity) connected to Digital pin 2.
- *  --> Luminosity sensor (photoresistance with 10 Kohm 
- *  resistance mounted in pull down mode) connected to Analog pin A0.
  ********************************************/
 
 /* Ids */
-const int number_of_sensors = 2;
+uint16_t id_node            = 236; // to change
+
 uint16_t id_temp            = 556; // to change
 uint16_t id_humid           = 557; // to change
 uint16_t id_luminosity      = 558; // to change
-uint16_t id_node            = 236; // to change
+
+const int number_of_sensors = 2;
 uint16_t id_sensor [number_of_sensors]={id_temp,id_humid}; //id_luminosity
 float value_f[number_of_sensors];
 
@@ -24,28 +24,20 @@ float value_f[number_of_sensors];
 #define DHTPIN 6     // Digital pin connected to the DHT senso
 #define DHTTYPE DHT11   // DHT 11
 
-#define LUMPIN A1
-#define VIN  3.3 
-#define R 10000
 /* LoRa module */ 
-unsigned int freq = 865200000;//HZ
-
+unsigned int freq = 865500000;//HZ
 
 /*network */ 
 #define WITH_APPKEY
-unsigned int idlePeriodInMin = 100; // in second
-unsigned int nCycle = idlePeriodInMin;
+unsigned int nCycle = 120;// in second
 unsigned short id_frame = 0;
 #ifdef WITH_APPKEY
 uint8_t my_appKey[4]={5, 6, 7, 8};
 #endif
 
+
 unsigned int cpt=1;
-
 char message[100];
-
-
-
 
 
 void setup(){
@@ -53,7 +45,7 @@ void setup(){
   delay(2000);
   
   Serial.println("Set LoRa modulation\r\n");
-
+  
   if (!LoRa.begin(freq)) {
     Serial.println("Starting LoRa failed!");
     while (1); 
@@ -77,14 +69,11 @@ void loop()
 	/* Update sensor values*/
 	value_f[0]= Temperature(); // sensor's identifier id_sensor[0] --> Temp (°C)
 	value_f[1]= Humidity(); // sensor's identifier id_sensor[1] --> Humid (%)
-  // value_f[1]= Luminosity(); // sensor's identifier id_sensor[2] --> Luminosity (Lumen)
 
   Serial.print("\nTemp:");
   Serial.println(value_f[0]);
   Serial.print("Hum:");
   Serial.println(value_f[1]);
-  // Serial.print("Lum:");
-  // Serial.println(value_f[2]);
   
   Serial.print("Frame Number : ");
   Serial.println(cpt);
@@ -94,7 +83,7 @@ void loop()
      send_data(value_f);
 
 	 /* wait for #idlePeriodInMin Minute */
-     for(int j=0;j<nCycle;j++){delay(1000);}
+     for (int j=0;j<nCycle;j++) {delay(1000);}
 }
 
 
@@ -144,10 +133,6 @@ void send_data(float * value){
 
 
 
-
-
-
-
 float Temperature(){
   DHT dht(DHTPIN, DHTTYPE);
   dht.begin();
@@ -159,12 +144,4 @@ float Humidity(){
   dht.begin();
   delay(2000);
   return dht.readHumidity();
-}
-
-float Luminosity(){
-  int sensorVal = analogRead(LUMPIN);
-   float Vout = float(sensorVal) * (VIN / float(1023));// Conversion analog to voltage
-  float RLDR = (R * (VIN - Vout))/Vout; // Conversion voltage to resistance
-  float phys=500/(RLDR/1000); // Conversion resitance to lumen
-  return phys;
 }
