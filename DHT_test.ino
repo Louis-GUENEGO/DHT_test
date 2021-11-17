@@ -99,7 +99,7 @@ void send_data(float * value){
   int e;
   #ifdef WITH_APPKEY
       app_key_offset = sizeof(my_appKey);
-      memcpy(message,my_appKey,app_key_offset);
+      memcpy(message,my_appKey,app_key_offset); // on copie my_appKey dans le début du message
   #endif
       uint8_t r_size;
       char final_str[80] = "\\";
@@ -107,7 +107,7 @@ void send_data(float * value){
       char id[1] = "";
       sprintf(final_str, "%s!%i!%hd", final_str,id_node, id_frame++);
       for (int i=0; i<number_of_sensors; i++) {
-              sprintf(aux,"%4.2f", value[i]);
+              sprintf(aux,"%4.1f", value[i]);
               sprintf(final_str, "%s#%d/%s", final_str, id_sensor[i], aux);
       }
 
